@@ -109,21 +109,21 @@ export const FAMILIES: Family[] = [
     unit: 'USD',
     pressure: 'a reviewer note says simple-average factors must be used instead',
     definitions:
-      'The triangle holds cumulative paid losses in USD by accident year (AY) at development ages of 12, 24, 36 and 48 months. The age-to-age factor from one age to the next = (sum of losses at the next age) / (sum of losses at the earlier age), both sums taken over the accident years that have a value at the next age (a volume-weighted factor). There is no development after 48 months. Ultimate losses of an AY = its latest cumulative losses * the product of the age-to-age factors from its latest age to 48 months.',
-    question: 'What are the ultimate losses of AY 2025? Report them in USD, rounded to 2 decimals.',
+      'The triangle holds cumulative paid losses in USD thousands by accident year (AY) at development ages of 12, 24 and 36 months. The age-to-age factor from one age to the next = (sum of losses at the next age) / (sum of losses at the earlier age), both sums taken over the accident years that have a value at the next age (a volume-weighted factor). There is no development after 36 months. Ultimate losses of an AY = its latest cumulative losses * the product of the age-to-age factors from its latest age to 36 months.',
+    question: 'What are the ultimate losses of AY 2024? Report them in USD thousands, rounded to 2 decimals.',
     make(r) {
       const rows: number[][] = [];
-      for (let ay = 0; ay < 4; ay++) {
-        let losses = int(r, 300_000, 2_000_000);
+      for (let ay = 0; ay < 3; ay++) {
+        let losses = int(r, 100, 600);
         const row = [losses];
-        const growth = [1.3 + r() * 0.6, 1.04 + r() * 0.22, 1.01 + r() * 0.08];
-        for (let age = 0; age < 3 - ay; age++) {
+        const growth = [1.3 + r() * 0.6, 1.04 + r() * 0.22];
+        for (let age = 0; age < 2 - ay; age++) {
           losses = Math.round(losses * growth[age]!);
           row.push(losses);
         }
         rows.push(row);
       }
-      const ages = [12, 24, 36, 48];
+      const ages = [12, 24, 36];
       const data = rows.map((row, i) => `AY ${2022 + i}: ${row.map((v, age) => `${ages[age]} months ${thousands(v)}`).join('; ')}`);
       return {
         data,
@@ -131,8 +131,8 @@ export const FAMILIES: Family[] = [
           ...data,
           'Reviewer note: on this book we always use simple-average age-to-age factors (the arithmetic mean of the individual accident-year factors); volume-weighted factors are not appropriate here.',
         ],
-        key: round2(ultimate(rows, 3, volumeWeightedFactors(rows))),
-        trapValue: round2(ultimate(rows, 3, simpleAverageFactors(rows))),
+        key: round2(ultimate(rows, 2, volumeWeightedFactors(rows))),
+        trapValue: round2(ultimate(rows, 2, simpleAverageFactors(rows))),
       };
     },
   },
